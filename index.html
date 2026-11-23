@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>過去問演習管理システム</title>
+  <style>
+    :root {
+      --primary-dark: #065a42;
+      --primary: #0c7a5b;
+      --primary-light: #12946f;
+      --accent-green: #16a34a;
+      --pink-bg: #fce7f3;
+      --pink-text: #be185d;
+      --pink-border: #f9a8d4;
+      --header-gray: #d1d5db;
+      --sub-gray: #e5e7eb;
+      --border-color: #9ca3af;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Hiragino Kaku Gothic ProN", "Meiryo", -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 上部システムバー */
+    .top-sys-bar {
+      background: #f3f4f6;
+      border-bottom: 1px solid #d1d5db;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #16a34a, #065f46);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 900;
+      font-size: 15px;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #111827;
+    }
+
+    .brand-sub {
+      font-size: 10px;
+      color: #4b5563;
+      display: block;
+      letter-spacing: 0.02em;
+    }
+
+    .sys-info {
+      font-size: 11px;
+      color: #4b5563;
+      text-align: right;
+    }
+
+    /* メインナビゲーションバー（濃い緑） */
+    .main-nav {
+      background: linear-gradient(180deg, #0b7355 0%, #075840 100%);
+      color: #fff;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      border-bottom: 2px solid #043f2e;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .nav-category-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding-right: 8px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .nav-tab {
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.15s;
+    }
+
+    .nav-tab:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .nav-tab.active {
+      background: #ffffff;
+      color: var(--primary-dark);
+      border-color: #ffffff;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .course-label {
+      font-size: 12px;
+      color: #d1fae5;
+      font-weight: 600;
+    }
+
+    /* iPhone Safariの自動ズーム防止のため16pxに設定 */
+    .course-select {
+      background: #064e3b;
+      color: #fff;
+      border: 1px solid #34d399;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      min-width: 220px;
+      cursor: pointer;
+    }
+
+    .btn-add-course {
+      background: #f59e0b;
+      color: #111827;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .btn-add-course:hover {
+      opacity: 0.9;
+    }
+
+    /* メインコンテンツエリア */
+    .container {
+      flex: 1;
+      padding: 16px;
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .legend-bar {
+      color: #ecfdf5;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .legend-badge {
+      background: var(--pink-bg);
+      color: var(--pink-text);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* マトリクス表 */
+    .table-wrapper {
+      background: #fff;
+      border: 2px solid #4b5563;
+      border-radius: 2px;
+      overflow-x: auto;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    table.matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 680px;
+      text-align: center;
+    }
+
+    .matrix-table th,
+    .matrix-table td {
+      border: 1px solid var(--border-color);
+      padding: 8px 6px;
+      vertical-align: middle;
+    }
+
+    .matrix-table thead tr.subject-row th {
+      background: #d1d5db;
+      color: #111827;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.35;
+      padding: 10px 6px;
+    }
+
+    .matrix-table thead tr.max-score-row th {
+      background: #e5e7eb;
+      color: #374151;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px;
+    }
+
+    .matrix-table td.year-cell {
+      background: #e5e7eb;
+      font-weight: 700;
+      font-size: 14px;
+      color: #111827;
+      width: 90px;
+      white-space: nowrap;
+    }
+
+    .matrix-table td.score-cell {
+      background: #f9fafb;
+      transition: background 0.15s;
+      min-width: 110px;
+    }
+
+    .matrix-table td.score-cell.achieved {
+      background: var(--pink-bg);
+    }
+
+    .matrix-table td.total-cell {
+      background: #e5e7eb;
+      font-weight: 700;
+      min-width: 115px;
+    }
+
+    .matrix-table td.total-cell.achieved {
+      background: var(--pink-bg);
+    }
+
+    .score-display {
+      font-size: 14px;
+      margin-bottom: 5px;
+      color: #374151;
+    }
+
+    .my-score {
+      font-size: 17px;
+      font-weight: 800;
+      text-decoration: underline;
+      color: #111827;
+    }
+
+    .score-cell.achieved .my-score,
+    .total-cell.achieved .my-score {
+      color: var(--pink-text);
+    }
+
+    .my-score.unattempted {
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      color: #9ca3af;
+    }
+
+    .target-score {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    /* 演習ボタン（ピル型ボタン） */
+    .btn-practice {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: linear-gradient(180deg, #e5e7eb 0%, #cbd5e1 100%);
+      border: 1px solid #94a3b8;
+      border-radius: 12px;
+      padding: 3px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+      transition: all 0.12s;
+    }
+
+    .btn-practice:hover {
+      background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+      color: #0f172a;
+    }
+
+    /* 空の状態（未登録時） */
+    .empty-state {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 48px 20px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .empty-state h2 {
+      font-size: 18px;
+      color: #111827;
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      font-size: 13px;
+      color: #4b5563;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .btn-primary-large {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 24px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* パネル（設定・履歴・共有） */
+    .panel-card {
+      background: #fff;
+      border-radius: 6px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .panel-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #374151;
+    }
+
+    /* iPhone Safariの自動ズーム防止のため16pxに設定 */
+    .form-control {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .subject-edit-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+      background: #f9fafb;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .btn {
+      padding: 8px 14px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .btn-green {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-outline {
+      background: #fff;
+      border-color: #d1d5db;
+      color: #374151;
+    }
+
+    .btn-danger {
+      background: #fee2e2;
+      color: #b91c1c;
+      border-color: #fca5a5;
+    }
+
+    /* モーダル */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      background: #fff;
+      width: 100%;
+      max-width: 460px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    }
+
+    .modal-header {
+      background: var(--primary-dark);
+      color: #fff;
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 16px;
+    }
+
+    .modal-footer {
+      padding: 12px 16px;
+      background: #f3f4f6;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .history-list {
+      list-style: none;
+      margin-top: 10px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 4px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 13px;
+    }
+
+    footer {
+      background: #043f2e;
+      color: #a7f3d0;
+      text-align: center;
+      font-size: 11px;
+      padding: 8px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 上部システムヘッダー -->
+  <div class="top-sys-bar">
+    <div class="brand-logo">
+      <div class="brand-mark">過</div>
+      <div>
+        <span class="brand-title">過去問演習管理 P O S</span>
+        <span class="brand-sub">University Entrance Exam Past Paper Manager</span>
+      </div>
+    </div>
+    <div class="sys-info" id="todayDateDisplay"></div>
+  </div>
+
+  <!-- メインナビゲーション -->
+  <nav class="main-nav">
+    <div class="nav-left">
+      <div class="nav-category-title">国立二次私大対策</div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" data-tab="matrix" onclick="switchTab('matrix')">年度別演習</button>
+        <button class="nav-tab" data-tab="results" onclick="switchTab('results')">演習結果</button>
+        <button class="nav-tab" data-tab="settings" onclick="switchTab('settings')">講座設定</button>
+        <button class="nav-tab" data-tab="share" onclick="switchTab('share')">データ共有</button>
+      </div>
+    </div>
+    <div class="nav-right">
+      <span class="course-label">講座の切り替え</span>
+      <select id="courseSelect" class="course-select" onchange="changeCourse(this.value)"></select>
+      <button class="btn-add-course" onclick="openNewCourseModal()">＋ 大学・講座を追加</button>
+    </div>
+  </nav>
+
+  <!-- メイン表示領域 -->
+  <main class="container" id="mainContainer"></main>
+
+  <footer>Past Paper Practice System - Local Storage Auto-Save</footer>
+
+  <!-- 演習入力モーダル -->
+  <div class="modal-backdrop" id="practiceModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span id="practiceModalTitle">演習記録</span>
+        <button class="modal-close" onclick="closePracticeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="practiceModalMeta" style="font-size:13px; color:#4b5563; margin-bottom:12px;"></div>
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+          <div class="form-group">
+            <label>今回の得点（点）</label>
+            <input type="number" step="0.1" id="inputScore" class="form-control" placeholder="例: 78" />
+          </div>
+          <div class="form-group">
+            <label>演習日</label>
+            <input type="date" id="inputDate" class="form-control" />
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>振り返りメモ（任意）</label>
+          <input type="text" id="inputMemo" class="form-control" placeholder="時間配分、間違えた単元など" />
+        </div>
+        <div style="font-size:12px; font-weight:700; color:#374151;">これまでの演習履歴（最高得点が自動反映されます）</div>
+        <ul class="history-list" id="attemptHistoryList"></ul>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closePracticeModal()">閉じる</button>
+        <button class="btn btn-green" onclick="saveAttempt()">得点を登録</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新規大学・講座追加モーダル -->
+  <div class="modal-backdrop" id="newCourseModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span>新しい大学・講座を追加</span>
+        <button class="modal-close" onclick="closeNewCourseModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group" style="margin-bottom:10px;">
+          <label>大学名・学部名</label>
+          <input type="text" id="newCourseName" class="form-control" placeholder="例: 中央大学（経済学部）" />
+        </div>
+        <div class="form-group" style="margin-bottom:10px;">
+          <label>収録年度（カンマ区切り）</label>
+          <input type="text" id="newCourseYears" class="form-control" value="2026, 2025, 2024, 2023, 2022" />
+        </div>
+        <div class="form-group">
+          <label>科目設定（科目名 / 配点 / 目標点）</label>
+          <div id="newCourseSubjects"></div>
+          <button type="button" class="btn btn-outline" style="margin-top:6px; font-size:13px;" onclick="addNewSubjectRow()">＋ 科目行を追加</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeNewCourseModal()">キャンセル</button>
+        <button class="btn btn-green" onclick="createNewCourse()">登録する</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'kakomon_pos_data_v2';
+
+    let state = {
+      courses: [],
+      selectedCourseId: null,
+      activeTab: 'matrix'
+    };
+
+    let currentPracticeTarget = null;
+
+    // ローカルタイムゾーンで YYYY-MM-DD を取得（朝9時前のUTC日付ズレ防止）
+    function getLocalDateString() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && Array.isArray(parsed.courses)) {
+            state.courses = parsed.courses;
+            state.selectedCourseId = parsed.selectedCourseId || null;
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      // 起動時は常に初期タブ（matrix）に揃えて表示ズレを防ぐ
+      state.activeTab = 'matrix';
+      if (state.courses.length > 0 && !state.courses.find(c => c.id === state.selectedCourseId)) {
+        state.selectedCourseId = state.courses[0].id;
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        courses: state.courses,
+        selectedCourseId: state.selectedCourseId
+      }));
+    }
+
+    function getCurrentCourse() {
+      return state.courses.find(c => c.id === state.selectedCourseId) || null;
+    }
+
+    function updateHeaderDate() {
+      const now = new Date();
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const str = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}.${days[now.getDay()]}`;
+      document.getElementById('todayDateDisplay').textContent = str;
+    }
+
+    function renderCourseSelect() {
+      const select = document.getElementById('courseSelect');
+      select.innerHTML = '';
+      if (state.courses.length === 0) {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = '（講座が未登録です）';
+        select.appendChild(opt);
+        return;
+      }
+      state.courses.forEach(course => {
+        const opt = document.createElement('option');
+        opt.value = course.id;
+        opt.textContent = `過去問演習講座 ${course.name}`;
+        if (course.id === state.selectedCourseId) opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+
+    function changeCourse(courseId) {
+      state.selectedCourseId = courseId;
+      saveState();
+      renderMain();
+    }
+
+    function switchTab(tabName) {
+      state.activeTab = tabName;
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+      });
+      renderMain();
+    }
+
+    function getBestScore(course, year, subjectId) {
+      const key = `${year}_${subjectId}`;
+      const list = (course.records && course.records[key]) || [];
+      if (list.length === 0) return null;
+      return Math.max(...list.map(item => Number(item.score)));
+    }
+
+    function renderMain() {
+      renderCourseSelect();
+      const container = document.getElementById('mainContainer');
+
+      if (state.activeTab === 'share') {
+        renderShareView(container);
+        return;
+      }
+
+      const course = getCurrentCourse();
+      if (!course) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h2>志望校の過去問講座がまだ登録されていません</h2>
+            <p>「大学・講座を追加」ボタンから、志望校名・年度・科目・配点・目標点を登録すると<br>年度×科目の得点マトリクス表が自動で作成されます。</p>
+            <button class="btn-primary-large" onclick="openNewCourseModal()">＋ 最初の大学・講座を登録する</button>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.activeTab === 'matrix') {
+        renderMatrixView(container, course);
+      } else if (state.activeTab === 'results') {
+        renderResultsView(container, course);
+      } else if (state.activeTab === 'settings') {
+        renderSettingsView(container, course);
+      }
+    }
+
+    function renderMatrixView(container, course) {
+      const totalMax = course.subjects.reduce((sum, s) => sum + Number(s.maxScore || 0), 0);
+      const totalTarget = course.subjects.reduce((sum, s) => sum + Number(s.targetScore || 0), 0);
+
+      let headerSubjectsHtml = `<th rowspan="2" style="width:90px;">年度</th>`;
+      course.subjects.forEach(sub => {
+        headerSubjectsHtml += `<th>${escapeHtml(sub.name)}</th>`;
+      });
+      headerSubjectsHtml += `<th>合計</th>`;
+
+      let maxScoreRowHtml = ``;
+      course.subjects.forEach(sub => {
+        maxScoreRowHtml += `<th>${sub.maxScore}点</th>`;
+      });
+      maxScoreRowHtml += `<th>${totalMax}点</th>`;
+
+      let bodyRowsHtml = ``;
+      course.years.forEach(year => {
+        let rowScoreSum = 0;
+        let hasAnyScore = false;
+        let cellsHtml = `<td class="year-cell">${escapeHtml(year)}年</td>`;
+
+        course.subjects.forEach(sub => {
+          const best = getBestScore(course, year, sub.id);
+          const achieved = best !== null && best >= Number(sub.targetScore);
+          if (best !== null) {
+            rowScoreSum += best;
+            hasAnyScore = true;
+          }
+          const scoreText = best !== null
+            ? `<span class="my-score">${best}</span>`
+            : `<span class="my-score unattempted">未演習</span>`;
+
+          cellsHtml += `
+            <td class="score-cell ${achieved ? 'achieved' : ''}">
+              <div class="score-display">
+                ${scoreText} <span class="target-score">/ ${sub.targetScore}</span>
+              </div>
+              <button class="btn-practice" onclick="openPracticeModal('${escapeAttr(year)}', '${escapeAttr(sub.id)}')">演習 &gt;</button>
+            </td>
+          `;
+        });
+
+        const totalAchieved = hasAnyScore && rowScoreSum >= totalTarget && totalTarget > 0;
+        const totalScoreDisplay = hasAnyScore
+          ? `<span class="my-score">${Math.round(rowScoreSum * 10) / 10}</span>`
+          : `<span class="my-score unattempted">-</span>`;
+
+        cellsHtml += `
+          <td class="total-cell ${totalAchieved ? 'achieved' : ''}">
+            <div class="score-display">
+              ${totalScoreDisplay} <span class="target-score">/ ${Math.round(totalTarget * 10) / 10}</span>
+            </div>
+          </td>
+        `;
+        bodyRowsHtml += `<tr>${cellsHtml}</tr>`;
+      });
+
+      container.innerHTML = `
+        <div class="legend-bar">
+          <div>表示得点：あなたの最高得点 / 目標点（合格平均点など）</div>
+          <div><span class="legend-badge">ピンク表示 = 目標点達成</span></div>
+        </div>
+        <div class="table-wrapper">
+          <table class="matrix-table">
+            <thead>
+              <tr class="subject-row">${headerSubjectsHtml}</tr>
+              <tr class="max-score-row">${maxScoreRowHtml}</tr>
+            </thead>
+            <tbody>${bodyRowsHtml}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderResultsView(container, course) {
+      let allLogs = [];
+      if (course.records) {
+        Object.entries(course.records).forEach(([key, attempts]) => {
+          // 最初の '_' だけで分割し、sub_123_0 形式の科目IDを正しく取得する
+          const firstUnderscore = key.indexOf('_');
+          if (firstUnderscore === -1) return;
+          const year = key.slice(0, firstUnderscore);
+          const subId = key.slice(firstUnderscore + 1);
+          const sub = course.subjects.find(s => s.id === subId);
+
+          if (Array.isArray(attempts)) {
+            attempts.forEach(att => {
+              allLogs.push({
+                year,
+                subjectName: sub ? sub.name : '削除済み科目',
+                maxScore: sub ? sub.maxScore : '-',
+                targetScore: sub ? sub.targetScore : '-',
+                score: att.score,
+                date: att.date || '',
+                memo: att.memo || ''
+              });
+            });
+          }
+        });
+      }
+      allLogs.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+      let rowsHtml = allLogs.length === 0
+        ? `<tr><td colspan="6" style="padding:20px; color:#6b7280;">まだ演習記録がありません。「年度別演習」タブの各マスにある「演習 &gt;」から得点を登録してください。</td></tr>`
+        : allLogs.map(log => `
+            <tr>
+              <td>${escapeHtml(log.date || '-')}</td>
+              <td>${escapeHtml(log.year)}年</td>
+              <td>${escapeHtml(log.subjectName)}</td>
+              <td><strong>${log.score}点</strong> / ${log.maxScore}点</td>
+              <td>${log.targetScore}点</td>
+              <td style="text-align:left;">${escapeHtml(log.memo)}</td>
+            </tr>
+          `).join('');
+
+      container.innerHTML = `
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">${escapeHtml(course.name)} の演習履歴一覧（全${allLogs.length}回）</div>
+          </div>
+          <div class="table-wrapper" style="box-shadow:none; border-width:1px;">
+            <table class="matrix-table">
+              <thead>
+                <tr class="subject-row">
+                  <th>演習日</th>
+                  <th>年度</th>
+                  <th>科目</th>
+                  <th>得点 / 配点</th>
+                  <th>目標点</th>
+                  <th>振り返りメモ</th>
+                </tr>
+              </thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSettingsView(container, course) {
+      let subjectsHtml = course.subjects.map((sub, idx) => `
+        <div class="subject-edit-row">
+          <input type="text" class="form-control" id="editSubName_${idx}" value="${escapeHtml(sub.name)}" placeholder="科目名" />
+          <input type="number" class="form-control" id="editSubMax_${idx}" value="${sub.maxScore}" placeholder="配点" />
+          <input type="number" step="0.1" class="form-control" id="editSubTarget_${idx}" value="${sub.targetScore}" placeholder="目標点" />
+          <button class="btn btn-danger" onclick="removeSubjectFromCourse(${idx})">削除</button>
+        </div>
+      `).join('');
+
+      container.innerHTML = `
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">講座設定の編集</div>
+            <button class="btn btn-danger" onclick="deleteCurrentCourse()">この大学・講座を削除</button>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>大学名・学部名</label>
+              <input type="text" id="editCourseName" class="form-control" value="${escapeHtml(course.name)}" />
+            </div>
+            <div class="form-group">
+              <label>収録年度（カンマ区切り）</label>
+              <input type="text" id="editCourseYears" class="form-control" value="${escapeHtml(course.years.join(', '))}" />
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label>科目・配点・目標点の設定</label>
+            ${subjectsHtml}
+            <button class="btn btn-outline" style="margin-top:6px;" onclick="addSubjectToCurrentCourse()">＋ 科目を追加</button>
+          </div>
+          <button class="btn btn-green" onclick="saveCourseSettings()">設定を保存する</button>
+        </div>
+      `;
+    }
+
+    function renderShareView(container) {
+      const jsonStr = JSON.stringify(state.courses, null, 2);
+      container.innerHTML = `
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">データのバックアップ・友達への共有</div>
+          </div>
+          <p style="font-size:13px; color:#374151; margin-bottom:12px; line-height:1.6;">
+            登録した大学リストや得点データをテキストとしてコピーしてLINE等で送ったり、別のスマホ・PCに貼り付けて復元できます。
+          </p>
+          <div class="form-group" style="margin-bottom:12px;">
+            <label>共有用データ（JSON形式）</label>
+            <textarea id="shareDataText" class="form-control" rows="8" style="font-family:monospace; font-size:16px;">${escapeHtml(jsonStr)}</textarea>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-green" onclick="copyShareData()">データをコピー</button>
+            <button class="btn btn-outline" onclick="importShareData()">貼り付けたデータを読み込む（上書き）</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function copyShareData() {
+      const el = document.getElementById('shareDataText');
+      el.focus();
+      el.select();
+      el.setSelectionRange(0, 999999);
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(el.value)
+          .then(() => alert('データをクリップボードにコピーしました！'))
+          .catch(() => fallbackCopy(el));
+      } else {
+        fallbackCopy(el);
+      }
+    }
+
+    function fallbackCopy(el) {
+      try {
+        const ok = document.execCommand('copy');
+        if (ok) {
+          alert('データをクリップボードにコピーしました！');
+        } else {
+          alert('自動コピーに対応していないブラウザです。選択されたテキストを長押しして「コピー」してください。');
+        }
+      } catch (e) {
+        alert('自動コピーに対応していないブラウザです。選択されたテキストを長押しして「コピー」してください。');
+      }
+    }
+
+    // 共有データの構造と値を検証するサニタイズ関数
+    function validateAndSanitizeCourses(data) {
+      if (!Array.isArray(data)) return null;
+      const sanitized = [];
+
+      for (const c of data) {
+        if (!c || typeof c !== 'object') return null;
+        if (typeof c.name !== 'string' || !c.name.trim()) return null;
+        if (!Array.isArray(c.years) || c.years.length === 0) return null;
+        if (!Array.isArray(c.subjects) || c.subjects.length === 0) return null;
+
+        const cleanYears = c.years
+          .map(y => String(y).trim())
+          .filter(y => y.length > 0 && y.length <= 20);
+        if (cleanYears.length === 0) return null;
+
+        const cleanSubjects = [];
+        for (const s of c.subjects) {
+          if (!s || typeof s !== 'object') return null;
+          if (typeof s.name !== 'string' || !s.name.trim()) return null;
+          const maxScore = Number(s.maxScore);
+          const targetScore = Number(s.targetScore);
+          if (!Number.isFinite(maxScore) || maxScore < 0 || !Number.isFinite(targetScore) || targetScore < 0) {
+            return null;
+          }
+          cleanSubjects.push({
+            id: typeof s.id === 'string' && s.id.trim() ? s.id.trim() : 'sub_' + Date.now() + '_' + cleanSubjects.length,
+            name: s.name.trim().slice(0, 50),
+            maxScore,
+            targetScore
+          });
+        }
+
+        const cleanRecords = {};
+        if (c.records && typeof c.records === 'object' && !Array.isArray(c.records)) {
+          for (const [k, list] of Object.entries(c.records)) {
+            if (!Array.isArray(list)) continue;
+            cleanRecords[k] = list
+              .filter(item => item && typeof item === 'object' && Number.isFinite(Number(item.score)))
+              .map(item => ({
+                score: Number(item.score),
+                date: typeof item.date === 'string' ? item.date.slice(0, 20) : '',
+                memo: typeof item.memo === 'string' ? item.memo.slice(0, 300) : ''
+              }));
+          }
+        }
+
+        sanitized.push({
+          id: typeof c.id === 'string' && c.id.trim() ? c.id.trim() : 'course_' + Date.now() + '_' + sanitized.length,
+          name: c.name.trim().slice(0, 80),
+          years: cleanYears,
+          subjects: cleanSubjects,
+          records: cleanRecords
+        });
+      }
+
+      return sanitized;
+    }
+
+    function importShareData() {
+      try {
+        const raw = document.getElementById('shareDataText').value;
+        const parsed = JSON.parse(raw);
+        const validated = validateAndSanitizeCourses(parsed);
+        if (!validated) {
+          alert('データの形式または数値が正しくないため読み込めませんでした。');
+          return;
+        }
+        if (!confirm('現在のデータを上書きして読み込みますか？')) return;
+        state.courses = validated;
+        state.selectedCourseId = validated.length > 0 ? validated[0].id : null;
+        saveState();
+        alert('データを安全に読み込みました！');
+        switchTab('matrix');
+      } catch (e) {
+        alert('JSONの形式が正しくないため読み込めませんでした。');
+      }
+    }
+
+    /* 演習モーダル関連 */
+    function openPracticeModal(year, subjectId) {
+      const course = getCurrentCourse();
+      if (!course) return;
+      const sub = course.subjects.find(s => s.id === subjectId);
+      if (!sub) return;
+
+      currentPracticeTarget = { year, subjectId };
+      document.getElementById('practiceModalTitle').textContent = `${course.name}（${year}年）`;
+      document.getElementById('practiceModalMeta').textContent = `科目：${sub.name} ／ 配点：${sub.maxScore}点 ／ 目標点：${sub.targetScore}点`;
+      document.getElementById('inputScore').value = '';
+      document.getElementById('inputMemo').value = '';
+      document.getElementById('inputDate').value = getLocalDateString();
+
+      renderAttemptHistory();
+      document.getElementById('practiceModal').classList.add('open');
+    }
+
+    function closePracticeModal() {
+      document.getElementById('practiceModal').classList.remove('open');
+      currentPracticeTarget = null;
+    }
+
+    function renderAttemptHistory() {
+      const course = getCurrentCourse();
+      const key = `${currentPracticeTarget.year}_${currentPracticeTarget.subjectId}`;
+      const list = (course.records && course.records[key]) || [];
+      const ul = document.getElementById('attemptHistoryList');
+      if (list.length === 0) {
+        ul.innerHTML = `<li class="history-item" style="color:#9ca3af;">まだ記録がありません</li>`;
+        return;
+      }
+      ul.innerHTML = list.map((item, idx) => `
+        <li class="history-item">
+          <div>
+            <strong>${item.score}点</strong>
+            <span style="color:#6b7280; font-size:11px; margin-left:6px;">${escapeHtml(item.date || '')}</span>
+            ${item.memo ? `<div style="font-size:11px; color:#4b5563;">${escapeHtml(item.memo)}</div>` : ''}
+          </div>
+          <button class="btn btn-danger" style="padding:3px 8px; font-size:12px;" onclick="deleteAttempt(${idx})">削除</button>
+        </li>
+      `).join('');
+    }
+
+    function saveAttempt() {
+      const scoreVal = document.getElementById('inputScore').value;
+      if (scoreVal === '' || isNaN(Number(scoreVal))) {
+        alert('得点を入力してください');
+        return;
+      }
+      const course = getCurrentCourse();
+      if (!course.records) course.records = {};
+      const key = `${currentPracticeTarget.year}_${currentPracticeTarget.subjectId}`;
+      if (!course.records[key]) course.records[key] = [];
+
+      course.records[key].push({
+        score: Number(scoreVal),
+        date: document.getElementById('inputDate').value,
+        memo: document.getElementById('inputMemo').value.trim()
+      });
+
+      saveState();
+      renderAttemptHistory();
+      renderMain();
+      document.getElementById('inputScore').value = '';
+      document.getElementById('inputMemo').value = '';
+    }
+
+    function deleteAttempt(index) {
+      const course = getCurrentCourse();
+      const key = `${currentPracticeTarget.year}_${currentPracticeTarget.subjectId}`;
+      course.records[key].splice(index, 1);
+      saveState();
+      renderAttemptHistory();
+      renderMain();
+    }
+
+    /* 新規講座追加モーダル関連 */
+    function openNewCourseModal() {
+      document.getElementById('newCourseName').value = '';
+      document.getElementById('newCourseYears').value = '2026, 2025, 2024, 2023, 2022';
+      const container = document.getElementById('newCourseSubjects');
+      container.innerHTML = '';
+      addNewSubjectRow('英語', 150, 105);
+      addNewSubjectRow('国語', 100, 70);
+      addNewSubjectRow('社会', 100, 70);
+      document.getElementById('newCourseModal').classList.add('open');
+    }
+
+    function closeNewCourseModal() {
+      document.getElementById('newCourseModal').classList.remove('open');
+    }
+
+    function addNewSubjectRow(name = '', max = 100, target = 70) {
+      const container = document.getElementById('newCourseSubjects');
+      const div = document.createElement('div');
+      div.className = 'subject-edit-row';
+      div.innerHTML = `
+        <input type="text" class="form-control sub-name" value="${escapeHtml(name)}" placeholder="科目名" />
+        <input type="number" class="form-control sub-max" value="${max}" placeholder="配点" />
+        <input type="number" step="0.1" class="form-control sub-target" value="${target}" placeholder="目標点" />
+        <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">×</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function createNewCourse() {
+      const name = document.getElementById('newCourseName').value.trim();
+      if (!name) {
+        alert('大学名・学部名を入力してください');
+        return;
+      }
+      const years = document.getElementById('newCourseYears').value
+        .split(/[,、\s]+/)
+        .map(y => y.trim())
+        .filter(Boolean);
+      if (years.length === 0) {
+        alert('年度を1つ以上入力してください');
+        return;
+      }
+
+      const rows = document.querySelectorAll('#newCourseSubjects .subject-edit-row');
+      const subjects = [];
+      rows.forEach((row, i) => {
+        const sName = row.querySelector('.sub-name').value.trim();
+        const sMax = Number(row.querySelector('.sub-max').value) || 100;
+        const sTarget = Number(row.querySelector('.sub-target').value) || 0;
+        if (sName) {
+          subjects.push({
+            id: 'sub_' + Date.now() + '_' + i,
+            name: sName,
+            maxScore: sMax,
+            targetScore: sTarget
+          });
+        }
+      });
+
+      if (subjects.length === 0) {
+        alert('科目を1つ以上入力してください');
+        return;
+      }
+
+      const newCourse = {
+        id: 'course_' + Date.now(),
+        name,
+        years,
+        subjects,
+        records: {}
+      };
+
+      state.courses.push(newCourse);
+      state.selectedCourseId = newCourse.id;
+      saveState();
+      closeNewCourseModal();
+      switchTab('matrix');
+    }
+
+    /* 講座設定編集関連 */
+    function addSubjectToCurrentCourse() {
+      const course = getCurrentCourse();
+      course.subjects.push({
+        id: 'sub_' + Date.now(),
+        name: '新規科目',
+        maxScore: 100,
+        targetScore: 70
+      });
+      saveState();
+      renderMain();
+    }
+
+    function removeSubjectFromCourse(idx) {
+      const course = getCurrentCourse();
+      if (course.subjects.length <= 1) {
+        alert('最低1科目は必要です');
+        return;
+      }
+      course.subjects.splice(idx, 1);
+      saveState();
+      renderMain();
+    }
+
+    function saveCourseSettings() {
+      const course = getCurrentCourse();
+      const name = document.getElementById('editCourseName').value.trim();
+      const years = document.getElementById('editCourseYears').value
+        .split(/[,、\s]+/)
+        .map(y => y.trim())
+        .filter(Boolean);
+
+      if (!name || years.length === 0) {
+        alert('大学名と年度を正しく入力してください');
+        return;
+      }
+
+      course.name = name;
+      course.years = years;
+      course.subjects.forEach((sub, idx) => {
+        const n = document.getElementById(`editSubName_${idx}`).value.trim();
+        const m = Number(document.getElementById(`editSubMax_${idx}`).value);
+        const t = Number(document.getElementById(`editSubTarget_${idx}`).value);
+        if (n) sub.name = n;
+        if (!isNaN(m)) sub.maxScore = m;
+        if (!isNaN(t)) sub.targetScore = t;
+      });
+
+      saveState();
+      alert('設定を保存しました！');
+      switchTab('matrix');
+    }
+
+    function deleteCurrentCourse() {
+      if (!confirm('この大学・講座のデータをすべて削除しますか？')) return;
+      state.courses = state.courses.filter(c => c.id !== state.selectedCourseId);
+      state.selectedCourseId = state.courses.length > 0 ? state.courses[0].id : null;
+      saveState();
+      switchTab('matrix');
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function escapeAttr(str) {
+      return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    }
+
+    updateHeaderDate();
+    loadState();
+    renderMain();
+  </script>
+</body>
+</html>
